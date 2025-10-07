@@ -15,7 +15,7 @@ use crate::commands::schedule::{
     handle_schedule_run_now, handle_schedule_services_status, handle_schedule_services_stop,
     handle_schedule_sessions,
 };
-use crate::commands::session::{handle_session_list, handle_session_remove};
+use crate::commands::session::{handle_session_list, handle_session_remove, handle_session_show};
 use crate::recipes::extract_from_cli::extract_recipe_info_from_cli;
 use crate::recipes::recipe::{explain_recipe, render_recipe_as_yaml};
 use crate::session::{build_session, SessionBuilderConfig, SessionSettings};
@@ -165,6 +165,11 @@ enum SessionCommand {
             default_value = "markdown"
         )]
         format: String,
+    },
+    #[command(about = "Show messages from a previous session")]
+    Show {
+        #[command(flatten)]
+        identifier: Option<Identifier>,
     },
 }
 
@@ -857,6 +862,25 @@ pub async fn cli() -> Result<()> {
                     .await?;
                     Ok(())
                 }
+                Some(SessionCommand::Show { identifier }) => {
+                    let session_identifier = if let Some(id) = identifier {
+                        get_session_id(id, true).await?
+                    } else {
+                        // If no identifier is provided, prompt for interactive selection
+                        match crate::commands::session::prompt_interactive_session_selection_for_show()
+                            .await
+                        {
+                            Ok(id) => id,
+                            Err(e) => {
+                                eprintln!("Error: {}", e);
+                                return Ok(());
+                            }
+                        }
+                    };
+
+                    handle_session_show(session_identifier).await?;
+                    Ok(())
+                }
                 None => {
                     let session_start = std::time::Instant::now();
                     let session_type = if resume { "resumed" } else { "new" };
@@ -1359,7 +1383,7 @@ mod tests {
     #[tokio::test]
     async fn test_get_session_id_must_exist_true_with_existing_session() {
         // Test that when must_exist=true and session exists, it returns the session ID
-        
+
         // Create a test session
         let session = match SessionManager::create_session(
             std::env::current_dir().unwrap(),
@@ -1373,9 +1397,9 @@ mod tests {
                 return;
             }
         };
-        
+
         let session_id = session.id.clone();
-        
+
         // Test with the actual session ID
         let identifier = Identifier {
             name: Some(session_id.clone()),
@@ -1387,7 +1411,7 @@ mod tests {
         if result.is_ok() {
             assert_eq!(result.unwrap(), session_id);
         }
-        
+
         // Clean up
         let _ = SessionManager::delete_session(&session_id).await;
     }
@@ -1395,7 +1419,7 @@ mod tests {
     #[tokio::test]
     async fn test_get_session_id_finds_by_description() {
         // Test that get_session_id can find sessions by description
-        
+
         // Create a test session with a specific description
         let test_description = "Unique test description 12345";
         let session = match SessionManager::create_session(
@@ -1410,9 +1434,9 @@ mod tests {
                 return;
             }
         };
-        
+
         let session_id = session.id.clone();
-        
+
         // Test searching by part of the description
         let identifier = Identifier {
             name: Some("Unique test description".to_string()),
@@ -1424,7 +1448,7 @@ mod tests {
         if result.is_ok() {
             assert_eq!(result.unwrap(), session_id);
         }
-        
+
         // Clean up
         let _ = SessionManager::delete_session(&session_id).await;
     }
@@ -1432,7 +1456,7 @@ mod tests {
     #[tokio::test]
     async fn test_get_session_id_must_exist_false_with_existing_session() {
         // Test that when must_exist=false and session exists, it still returns the session ID
-        
+
         // Create a test session
         let session = match SessionManager::create_session(
             std::env::current_dir().unwrap(),
@@ -1446,9 +1470,9 @@ mod tests {
                 return;
             }
         };
-        
+
         let session_id = session.id.clone();
-        
+
         let identifier = Identifier {
             name: Some(session_id.clone()),
             session_id: None,
@@ -1459,7 +1483,7 @@ mod tests {
         if result.is_ok() {
             assert_eq!(result.unwrap(), session_id);
         }
-        
+
         // Clean up
         let _ = SessionManager::delete_session(&session_id).await;
     }

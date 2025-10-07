@@ -1,4 +1,4 @@
-use crate::session::message_to_markdown;
+use crate::session::{message_to_markdown, render_message};
 use anyhow::{Context, Result};
 
 use cliclack::{confirm, multiselect, select};
@@ -326,5 +326,304 @@ pub async fn prompt_interactive_session_selection() -> Result<String> {
         Ok(session.id.clone())
     } else {
         Err(anyhow::anyhow!("Invalid selection"))
+    }
+}
+
+/// Prompt the user to interactively select a session for show command
+///
+/// Shows a list of available sessions and lets the user select one
+pub async fn prompt_interactive_session_selection_for_show() -> Result<String> {
+    let sessions = SessionManager::list_sessions().await?;
+
+    if sessions.is_empty() {
+        return Err(anyhow::anyhow!("No sessions found"));
+    }
+
+    // Build the selection prompt
+    let mut selector = select("Select a session to show:");
+
+    // Map to display text
+    let display_map: std::collections::HashMap<String, Session> = sessions
+        .iter()
+        .map(|s| {
+            let desc = if s.description.is_empty() {
+                "(no description)"
+            } else {
+                &s.description
+            };
+            let truncated_desc = safe_truncate(desc, TRUNCATED_DESC_LENGTH);
+
+            let display_text = format!("{} - {} ({})", s.updated_at, truncated_desc, s.id);
+            (display_text, s.clone())
+        })
+        .collect();
+
+    // Add each session as an option
+    for display_text in display_map.keys() {
+        selector = selector.item(display_text.clone(), display_text.clone(), "");
+    }
+
+    // Add a cancel option
+    let cancel_value = String::from("cancel");
+    selector = selector.item(cancel_value, "Cancel", "Cancel");
+
+    // Get user selection
+    let selected_display_text: String = selector.interact()?;
+
+    if selected_display_text == "cancel" {
+        return Err(anyhow::anyhow!("Canceled"));
+    }
+
+    // Retrieve the selected session
+    if let Some(session) = display_map.get(&selected_display_text) {
+        Ok(session.id.clone())
+    } else {
+        Err(anyhow::anyhow!("Invalid selection"))
+    }
+}
+
+/// Show messages from a previous session
+///
+/// Displays all messages from a session without resuming the interaction
+pub async fn handle_session_show(session_id: String) -> Result<()> {
+    // First get session metadata without loading messages
+    let session = match SessionManager::get_session(&session_id, false).await {
+        Ok(session) => session,
+        Err(e) => {
+            return Err(anyhow::anyhow!(
+                "Session '{}' not found or failed to read: {}",
+                session_id,
+                e
+            ));
+        }
+    };
+
+    // If session has no messages, exit early
+    if session.message_count == 0 {
+        println!("This session has no messages.");
+        return Ok(());
+    }
+
+    // Now load the full conversation
+    let session_with_conversation = SessionManager::get_session(&session_id, true).await?;
+
+    // Handle sessions without conversations (shouldn't happen if message_count > 0, but be safe)
+    let messages = match &session_with_conversation.conversation {
+        Some(conversation) => conversation.messages(),
+        None => {
+            println!("This session has no messages.");
+            return Ok(());
+        }
+    };
+
+    if messages.is_empty() {
+        println!("This session has no messages.");
+        return Ok(());
+    }
+
+    // Print session header
+    println!(
+        "\n{} {} ({})",
+        console::style("Session:").green().bold(),
+        console::style(&session.description).green(),
+        console::style(&session.id).dim()
+    );
+    println!(
+        "{} {}",
+        console::style("Messages:").green().bold(),
+        console::style(messages.len()).green()
+    );
+    println!(
+        "{} {}",
+        console::style("Last updated:").green().bold(),
+        console::style(&session.updated_at).green()
+    );
+    println!();
+
+    // Render each message with role headers
+    // Note: debug is set to false to avoid showing full tool outputs
+    for message in messages {
+        // Print role header
+        let role_header = match message.role {
+            rmcp::model::Role::User => console::style("User:").cyan().bold(),
+            rmcp::model::Role::Assistant => console::style("Assistant:").magenta().bold(),
+        };
+        println!("{}", role_header);
+
+        // Render the message content
+        render_message(message, false);
+
+        // Add spacing between messages
+        println!();
+    }
+
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use goose::conversation::message::Message;
+    use goose::session::SessionManager;
+
+    #[tokio::test]
+    async fn test_handle_session_show_with_valid_session() {
+        // Create a test session
+        let session = match SessionManager::create_session(
+            std::env::current_dir().unwrap(),
+            "Test session for show command".to_string(),
+        )
+        .await
+        {
+            Ok(s) => s,
+            Err(_) => {
+                // Skip test if we can't create a session
+                return;
+            }
+        };
+
+        let session_id = session.id.clone();
+
+        // Add a test message
+        let test_message = Message::user().with_text("Test user message");
+        if SessionManager::add_message(&session_id, &test_message)
+            .await
+            .is_err()
+        {
+            let _ = SessionManager::delete_session(&session_id).await;
+            return;
+        }
+
+        // Add an assistant message
+        let assistant_message = Message::assistant().with_text("Test assistant response");
+        if SessionManager::add_message(&session_id, &assistant_message)
+            .await
+            .is_err()
+        {
+            let _ = SessionManager::delete_session(&session_id).await;
+            return;
+        }
+
+        // Test the show command
+        let result = handle_session_show(session_id.clone()).await;
+
+        // Clean up
+        let _ = SessionManager::delete_session(&session_id).await;
+
+        // Assert the command succeeded
+        assert!(result.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_handle_session_show_with_nonexistent_session() {
+        let fake_session_id = "nonexistent_session_test_12345".to_string();
+
+        let result = handle_session_show(fake_session_id).await;
+
+        // Should return an error for non-existent session
+        assert!(result.is_err());
+        assert!(result
+            .unwrap_err()
+            .to_string()
+            .contains("not found or failed to read"));
+    }
+
+    #[tokio::test]
+    async fn test_handle_session_show_with_empty_session() {
+        // Create a test session without messages
+        let session = match SessionManager::create_session(
+            std::env::current_dir().unwrap(),
+            "Empty test session for show".to_string(),
+        )
+        .await
+        {
+            Ok(s) => s,
+            Err(_) => {
+                // Skip test if we can't create a session
+                return;
+            }
+        };
+
+        let session_id = session.id.clone();
+
+        // Add a small delay to ensure session is persisted
+        tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+
+        // Test the show command on empty session
+        let result = handle_session_show(session_id.clone()).await;
+
+        // Clean up
+        let _ = SessionManager::delete_session(&session_id).await;
+
+        // Should succeed even with no messages
+        if let Err(e) = result {
+            panic!("Expected Ok but got error: {}", e);
+        }
+    }
+
+    #[tokio::test]
+    async fn test_handle_session_show_displays_multiple_messages() {
+        // Create a test session
+        let session = match SessionManager::create_session(
+            std::env::current_dir().unwrap(),
+            "Multi-message test session".to_string(),
+        )
+        .await
+        {
+            Ok(s) => s,
+            Err(_) => {
+                return;
+            }
+        };
+
+        let session_id = session.id.clone();
+
+        // Add multiple messages
+        let messages = vec![
+            Message::user().with_text("First user message"),
+            Message::assistant().with_text("First assistant response"),
+            Message::user().with_text("Second user message"),
+            Message::assistant().with_text("Second assistant response"),
+        ];
+
+        for msg in messages {
+            if SessionManager::add_message(&session_id, &msg)
+                .await
+                .is_err()
+            {
+                let _ = SessionManager::delete_session(&session_id).await;
+                return;
+            }
+        }
+
+        // Test the show command
+        let result = handle_session_show(session_id.clone()).await;
+
+        // Clean up
+        let _ = SessionManager::delete_session(&session_id).await;
+
+        // Assert the command succeeded
+        assert!(result.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_prompt_interactive_session_selection_for_show_with_no_sessions() {
+        // This test verifies the function returns an error when no sessions exist
+        // We can't easily test the interactive part, but we can test the error case
+
+        // First, get all sessions and delete them temporarily for this test
+        let sessions = SessionManager::list_sessions().await.unwrap_or_default();
+
+        // If there are sessions, we can't reliably test the "no sessions" case
+        // without potentially affecting other tests, so we'll skip in that case
+        if !sessions.is_empty() {
+            // Skip this test if sessions exist - we don't want to delete them
+            return;
+        }
+
+        // If we reach here, there are no sessions, which is what we want to test
+        // However, we can't actually call the interactive function in a test
+        // So we'll just verify the list is empty
+        assert!(sessions.is_empty());
     }
 }

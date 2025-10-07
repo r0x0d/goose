@@ -14,6 +14,7 @@ use goose::conversation::Conversation;
 use std::io::Write;
 
 pub use self::export::message_to_markdown;
+pub use self::output::render_message;
 pub use builder::{build_session, SessionBuilderConfig, SessionSettings};
 use console::Color;
 use goose::agents::AgentEvent;
@@ -1756,10 +1757,10 @@ mod tests {
     async fn test_cli_session_new_with_nonexistent_session() {
         // Test that CliSession::new handles non-existent sessions gracefully
         // without panicking, even when a session_id is provided
-        
+
         let agent = Agent::new();
         let fake_session_id = Some("nonexistent_session_12345".to_string());
-        
+
         // This should not panic - it should create a session with empty messages
         let session = CliSession::new(
             agent,
@@ -1770,10 +1771,10 @@ mod tests {
             None,
             None,
         );
-        
+
         // Verify the session was created with the provided ID
         assert_eq!(session.session_id, fake_session_id);
-        
+
         // Verify messages are empty (not loaded from non-existent session)
         assert_eq!(session.messages.len(), 0);
     }
@@ -1781,22 +1782,14 @@ mod tests {
     #[test]
     fn test_cli_session_new_without_session_id() {
         // Test that CliSession::new works correctly when no session_id is provided
-        
+
         let agent = Agent::new();
-        
-        let session = CliSession::new(
-            agent,
-            None,
-            false,
-            None,
-            None,
-            None,
-            None,
-        );
-        
+
+        let session = CliSession::new(agent, None, false, None, None, None, None);
+
         // Verify no session ID is set
         assert_eq!(session.session_id, None);
-        
+
         // Verify messages are empty
         assert_eq!(session.messages.len(), 0);
     }
@@ -1804,7 +1797,7 @@ mod tests {
     #[tokio::test(flavor = "multi_thread")]
     async fn test_cli_session_new_with_existing_session() {
         // Test that CliSession::new loads messages from an existing session
-        
+
         // First, create a session in the database
         let session = match SessionManager::create_session(
             std::env::current_dir().unwrap(),
@@ -1818,9 +1811,9 @@ mod tests {
                 return;
             }
         };
-        
+
         let session_id = session.id.clone();
-        
+
         // Add a test message to the session
         let test_message = Message::user().with_text("Test message");
         if let Err(_) = SessionManager::add_message(&session_id, &test_message).await {
@@ -1828,7 +1821,7 @@ mod tests {
             let _ = SessionManager::delete_session(&session_id).await;
             return;
         }
-        
+
         // Now create a CliSession with this session ID
         let agent = Agent::new();
         let cli_session = CliSession::new(
@@ -1840,11 +1833,11 @@ mod tests {
             None,
             None,
         );
-        
+
         // Verify the session was loaded with messages
         assert_eq!(cli_session.session_id, Some(session_id.clone()));
         assert_eq!(cli_session.messages.len(), 1);
-        
+
         // Clean up: delete the test session
         let _ = SessionManager::delete_session(&session_id).await;
     }
