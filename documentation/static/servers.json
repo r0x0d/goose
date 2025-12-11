@@ -387,6 +387,48 @@
     "environmentVariables": []
   },
   {
+    "id": "linux_mcp_server",
+    "name": "Linux MCP Server",
+    "description": "Tools to allow LLM clients to interact with Linux systems remotely",
+    "command": "uvx linux-mcp-server",
+    "link": "https://github.com/rhel-lightspeed/linux-mcp-server",
+    "installation_notes": "Install using uvx package manager. Note: This is a read-only mcp server to discovering and interacting with remote/local systems.",
+    "is_builtin": false,
+    "endorsed": true,
+    "environmentVariables": [
+      {
+        "name": "LINUX_MCP_USER",
+        "description": "Username used for SSH connections",
+        "required": false
+      },
+      {
+        "name": "LINUX_MCP_SSH_KEY_PATH",
+        "description": "Path to SSH private key for remote execution",
+        "required": false
+      },
+      {
+        "name": "LINUX_MCP_USER",
+        "description": "Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)",
+        "required": false
+      },
+      {
+        "name": "LINUX_MCP_ALLOWED_LOG_PATHS",
+        "description": "Comma-separated list of log files that can be accessed",
+        "required": false
+      },
+      {
+        "name": "LINUX_MCP_LOG_DIR",
+        "description": "Custom directory for MCP server logs",
+        "required": false
+      },
+      {
+        "name": "LINUX_MCP_LOG_RETENTION_DAYS",
+        "description": "Days to retain log files (default: 10)",
+        "required": false
+      }
+    ]
+  },
+  {
     "id": "mbot-mcp",
     "name": "MBot",
     "description": "Control a MakeBlock mbot2 rover through MQTT (requires local setup)",
