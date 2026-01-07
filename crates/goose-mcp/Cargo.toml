@@ -12,53 +12,48 @@ workspace = true
 
 [dependencies]
 rmcp = { workspace = true, features = ["server", "client", "transport-io", "macros"] }
-anyhow = "1.0.94"
-tokio = { version = "1", features = ["full"] }
-tokio-stream = { version = "0.1", features = ["io-util"] }
-tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-tracing-appender = "0.2"
-url = "2.5"
+anyhow = { workspace = true }
+tokio = { workspace = true }
+tokio-stream = { workspace = true, features = ["io-util"] }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
+tracing-appender = { workspace = true }
+url = { workspace = true }
 base64 = "0.21"
-thiserror = "1.0"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-schemars = "1.0"
-lazy_static = "1.5"
-shellexpand = "3.1.0"
-indoc = "2.0.5"
+thiserror = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+schemars = { workspace = true }
+lazy_static = { workspace = true }
+shellexpand = { workspace = true }
+indoc = { workspace = true }
 xcap = "=0.4.0"
 reqwest = { version = "0.11", features = [
     "json",
     "rustls-tls-native-roots",
 ], default-features = false }
-async-trait = "0.1.89"
-chrono = { version = "0.4.38", features = ["serde"] }
+async-trait = { workspace = true }
+chrono = { workspace = true }
 etcetera = { workspace = true }
-tempfile = "3.8"
-include_dir = "0.7.4"
-webbrowser = {workspace = true} 
+tempfile = { workspace = true }
+include_dir = { workspace = true }
+webbrowser = { workspace = true }
 http-body-util = "0.1.2"
-regex = "1.11.1"
-once_cell = "1.20.2"
+regex = { workspace = true }
+once_cell = { workspace = true }
 ignore = { workspace = true }
 lopdf = "0.36.0"
 docx-rs = "0.4.7"
 image = "0.24.9"
 umya-spreadsheet = "2.2.3"
-keyring = { version = "3.6.2", features = [
-    "apple-native",
-    "windows-native",
-    "sync-secret-service",
-    "vendored",
-] }
-oauth2 = { version = "5.0.0", features = ["reqwest"] }
-utoipa = { version = "4.1", optional = true }
+keyring = { workspace = true }
+oauth2 = { workspace = true, features = ["reqwest"] }
+utoipa = { workspace = true, optional = true }
 hyper = "1"
 serde_with = "3"
-which = {workspace = true} 
+which = { workspace = true }
 glob = "0.3"
-lru = "0.12"
+lru = { workspace = true }
 tree-sitter = "0.21"
 tree-sitter-python = "0.21"
 tree-sitter-rust = "0.21"
@@ -71,18 +66,15 @@ tree-sitter-ruby = "0.21.0"
 streaming-iterator = "0.1"
 rayon = "1.10"
 libc = "0.2"
-# TODO: Fork mpatch or replace with a custom implementation using `similar` crate
-# for fuzzy patch matching. Current crate has limited maintenance (single maintainer,
-# ~1000 downloads). Pinned to exact version to prevent supply chain attacks.
 mpatch = "=0.2.0"
-tokio-util = "0.7.16"
-clap = { version = "4", features = ["derive"] }
+tokio-util = { workspace = true }
+clap = { workspace = true }
 
 
 [dev-dependencies]
-serial_test = "3.0.0"
+serial_test = { workspace = true }
 sysinfo = "0.32.1"
-temp-env = "0.3.6"
+temp-env = { workspace = true }
 colored = "2"
 
 [features]
