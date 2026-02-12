@@ -13,7 +13,7 @@ cargo build
 ### Build
 ```bash
 cargo build                   # debug
-cargo build --release         # release  
+cargo build --release         # release
 just release-binary           # release + openapi
 ```
 
@@ -42,7 +42,6 @@ cd ui/desktop && npm test    # test UI
 ```
 crates/
 ├── goose             # core logic
-├── goose-bench       # benchmarking
 ├── goose-cli         # CLI entry
 ├── goose-server      # backend (binary: goosed)
 ├── goose-mcp         # MCP extensions
