@@ -842,6 +842,7 @@ enum Command {
     },
 
     /// Start a web server with a chat interface
+    #[cfg(feature = "web")]
     #[command(about = "Experimental: Start a web server with a chat interface")]
     Web {
         /// Port to run the web server on
@@ -1041,6 +1042,7 @@ fn get_command_name(command: &Option<Command>) -> &'static str {
         Some(Command::Schedule { .. }) => "schedule",
         Some(Command::Update { .. }) => "update",
         Some(Command::Recipe { .. }) => "recipe",
+        #[cfg(feature = "web")]
         Some(Command::Web { .. }) => "web",
         Some(Command::Term { .. }) => "term",
         Some(Command::LocalModels { .. }) => "local-models",
@@ -1780,6 +1782,7 @@ pub async fn cli() -> anyhow::Result<()> {
             Ok(())
         }
         Some(Command::Recipe { command }) => handle_recipe_subcommand(command),
+        #[cfg(feature = "web")]
         Some(Command::Web {
             port,
             host,
