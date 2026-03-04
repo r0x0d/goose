@@ -44,10 +44,10 @@ include_dir = { workspace = true }
 regex = { workspace = true }
 once_cell = { workspace = true }
 ignore = { workspace = true }
-lopdf = "0.36.0"
-docx-rs = "0.4.7"
-image = { version = "0.24.9", features = ["jpeg"] }
-umya-spreadsheet = "2.2.3"
+lopdf = { version = "0.36.0", optional = true }
+docx-rs = { version = "0.4.7", optional = true }
+image = { version = "0.24.9", features = ["jpeg"], optional = true }
+umya-spreadsheet = { version = "2.2.3", optional = true }
 which = {workspace = true}
 lru = { workspace = true }
 tree-sitter = "0.26"
@@ -72,3 +72,9 @@ shell-words = "1.1.1"
 serial_test = { workspace = true }
 
 [features]
+default = ["autovisualiser", "computercontroller", "memory", "tutorial"]
+autovisualiser = []
+computercontroller = ["document-tools"]
+memory = []
+tutorial = []
+document-tools = ["dep:lopdf", "dep:docx-rs", "dep:umya-spreadsheet", "dep:image"]

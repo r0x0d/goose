@@ -11,13 +11,17 @@ description.workspace = true
 workspace = true
 
 [features]
-default = ["code-mode"]
+default = ["code-mode", "autovisualiser", "computercontroller", "memory", "tutorial"]
 code-mode = ["goose/code-mode"]
 cuda = ["goose/cuda"]
+autovisualiser = ["goose-mcp/autovisualiser"]
+computercontroller = ["goose-mcp/computercontroller"]
+memory = ["goose-mcp/memory"]
+tutorial = ["goose-mcp/tutorial"]
 
 [dependencies]
 goose = { path = "../goose", default-features = false }
-goose-mcp = { path = "../goose-mcp" }
+goose-mcp = { path = "../goose-mcp", default-features = false }
 rmcp = { workspace = true }
 axum = { workspace = true, features = ["ws", "macros"] }
 tokio = { workspace = true }

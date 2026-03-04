@@ -27,8 +27,11 @@ use std::sync::atomic::{AtomicBool, Ordering};
 #[cfg(unix)]
 use std::os::unix::fs::PermissionsExt;
 
+#[cfg(feature = "document-tools")]
 mod docx_tool;
+#[cfg(feature = "document-tools")]
 mod pdf_tool;
+#[cfg(feature = "document-tools")]
 mod xlsx_tool;
 
 mod platform;
@@ -139,7 +142,7 @@ pub struct CacheParams {
     pub path: Option<String>,
 }
 
-/// Parameters for the pdf_tool
+#[cfg(feature = "document-tools")]
 /// Enum for operation parameter in pdf_tool
 #[derive(Debug, Serialize, Deserialize, JsonSchema, Clone)]
 #[serde(rename_all = "snake_case")]
@@ -150,6 +153,7 @@ pub enum PdfOperation {
     ExtractImages,
 }
 
+#[cfg(feature = "document-tools")]
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
 pub struct PdfToolParams {
     /// Path to the PDF file
@@ -158,6 +162,7 @@ pub struct PdfToolParams {
     pub operation: PdfOperation,
 }
 
+#[cfg(feature = "document-tools")]
 /// Enum for operation parameter in docx_tool
 #[derive(Debug, Serialize, Deserialize, JsonSchema, Clone)]
 #[serde(rename_all = "snake_case")]
@@ -168,6 +173,7 @@ pub enum DocxOperation {
     UpdateDoc,
 }
 
+#[cfg(feature = "document-tools")]
 /// Enum for update mode in docx_tool params
 #[derive(Debug, Serialize, Deserialize, JsonSchema, Clone, Default)]
 #[serde(rename_all = "snake_case")]
@@ -183,6 +189,7 @@ pub enum DocxUpdateMode {
     AddImage,
 }
 
+#[cfg(feature = "document-tools")]
 /// Enum for text alignment in docx_tool params
 #[derive(Debug, Serialize, Deserialize, JsonSchema, Clone)]
 #[serde(rename_all = "lowercase")]
@@ -197,6 +204,7 @@ pub enum TextAlignment {
     Justified,
 }
 
+#[cfg(feature = "document-tools")]
 /// Styling options for text in docx_tool
 #[derive(Debug, Serialize, Deserialize, JsonSchema, Clone, Default)]
 pub struct DocxTextStyle {
@@ -220,6 +228,7 @@ pub struct DocxTextStyle {
     pub alignment: Option<TextAlignment>,
 }
 
+#[cfg(feature = "document-tools")]
 /// Additional parameters for update_doc operation
 #[derive(Debug, Serialize, Deserialize, JsonSchema, Clone, Default)]
 pub struct DocxUpdateParams {
@@ -246,6 +255,7 @@ pub struct DocxUpdateParams {
     pub style: Option<DocxTextStyle>,
 }
 
+#[cfg(feature = "document-tools")]
 /// Parameters for the docx_tool
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
 pub struct DocxToolParams {
@@ -261,7 +271,7 @@ pub struct DocxToolParams {
     pub params: Option<DocxUpdateParams>,
 }
 
-/// Parameters for the xlsx_tool
+#[cfg(feature = "document-tools")]
 /// Enum for operation parameter in xlsx_tool
 #[derive(Debug, Serialize, Deserialize, JsonSchema, Clone)]
 #[serde(rename_all = "snake_case")]
@@ -282,6 +292,7 @@ pub enum XlsxOperation {
     Save,
 }
 
+#[cfg(feature = "document-tools")]
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
 pub struct XlsxToolParams {
     /// Path to the XLSX file
@@ -1177,6 +1188,7 @@ impl ComputerControllerServer {
         Ok(CallToolResult::success(contents))
     }
 
+    #[cfg(feature = "document-tools")]
     /// Process Excel (XLSX) files to read and manipulate spreadsheet data
     #[tool(
         name = "xlsx_tool",
@@ -1376,6 +1388,7 @@ impl ComputerControllerServer {
         }
     }
 
+    #[cfg(feature = "document-tools")]
     /// Process DOCX files to extract text and create/update documents
     #[tool(
         name = "docx_tool",
@@ -1425,6 +1438,7 @@ impl ComputerControllerServer {
         Ok(CallToolResult::success(result))
     }
 
+    #[cfg(feature = "document-tools")]
     /// Process PDF files to extract text and images
     #[tool(
         name = "pdf_tool",

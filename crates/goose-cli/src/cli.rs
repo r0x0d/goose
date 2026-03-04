@@ -6,7 +6,14 @@ use goose::config::Config;
 use goose::posthog::get_telemetry_choice;
 use goose::recipe::Recipe;
 use goose_mcp::mcp_server_runner::{serve, McpCommand};
-use goose_mcp::{AutoVisualiserRouter, ComputerControllerServer, MemoryServer, TutorialServer};
+#[cfg(feature = "autovisualiser")]
+use goose_mcp::AutoVisualiserRouter;
+#[cfg(feature = "computercontroller")]
+use goose_mcp::ComputerControllerServer;
+#[cfg(feature = "memory")]
+use goose_mcp::MemoryServer;
+#[cfg(feature = "tutorial")]
+use goose_mcp::TutorialServer;
 
 use crate::commands::configure::{configure_telemetry_consent_dialog, handle_configure};
 use crate::commands::info::handle_info;
@@ -1054,9 +1061,13 @@ async fn handle_mcp_command(server: McpCommand) -> Result<()> {
     let name = server.name();
     let _ = crate::logging::setup_logging(Some(&format!("mcp-{name}")));
     match server {
+        #[cfg(feature = "autovisualiser")]
         McpCommand::AutoVisualiser => serve(AutoVisualiserRouter::new()).await?,
+        #[cfg(feature = "computercontroller")]
         McpCommand::ComputerController => serve(ComputerControllerServer::new()).await?,
+        #[cfg(feature = "memory")]
         McpCommand::Memory => serve(MemoryServer::new()).await?,
+        #[cfg(feature = "tutorial")]
         McpCommand::Tutorial => serve(TutorialServer::new()).await?,
     }
     Ok(())
