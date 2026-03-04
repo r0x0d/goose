@@ -1,6 +1,7 @@
 use crate::config::paths::Paths;
 use crate::config::GooseMode;
 use fs2::FileExt;
+#[cfg(feature = "keyring")]
 use keyring::Entry;
 use once_cell::sync::OnceCell;
 use serde::{Deserialize, Serialize};
@@ -48,6 +49,7 @@ impl From<serde_yaml::Error> for ConfigError {
     }
 }
 
+#[cfg(feature = "keyring")]
 impl From<keyring::Error> for ConfigError {
     fn from(err: keyring::Error) -> Self {
         ConfigError::KeyringError(err.to_string())
@@ -109,6 +111,7 @@ pub struct Config {
 }
 
 enum SecretStorage {
+    #[cfg(feature = "keyring")]
     Keyring { service: String },
     File { path: PathBuf },
 }
@@ -136,8 +139,13 @@ impl Default for Config {
             Ok(_) => SecretStorage::File {
                 path: config_dir.join("secrets.yaml"),
             },
+            #[cfg(feature = "keyring")]
             Err(_) => SecretStorage::Keyring {
                 service: KEYRING_SERVICE.to_string(),
+            },
+            #[cfg(not(feature = "keyring"))]
+            Err(_) => SecretStorage::File {
+                path: config_dir.join("secrets.yaml"),
             },
         };
         Config {
@@ -243,12 +251,22 @@ impl Config {
     /// This is primarily useful for testing or for applications that need
     /// to manage multiple configuration files.
     pub fn new<P: AsRef<Path>>(config_path: P, service: &str) -> Result<Self, ConfigError> {
+        #[cfg(feature = "keyring")]
+        let secrets = SecretStorage::Keyring {
+            service: service.to_string(),
+        };
+        #[cfg(not(feature = "keyring"))]
+        let secrets = {
+            let _ = service;
+            let config_dir = config_path.as_ref().parent().unwrap_or(Path::new("."));
+            SecretStorage::File {
+                path: config_dir.join("secrets.yaml"),
+            }
+        };
         Ok(Config {
             config_path: config_path.as_ref().to_path_buf(),
             defaults_path: None,
-            secrets: SecretStorage::Keyring {
-                service: service.to_string(),
-            },
+            secrets,
             guard: Mutex::new(()),
             secrets_cache: Arc::new(Mutex::new(None)),
         })
@@ -592,6 +610,7 @@ impl Config {
             tracing::debug!("secrets cache miss, fetching from storage");
 
             let loaded = match &self.secrets {
+                #[cfg(feature = "keyring")]
                 SecretStorage::Keyring { service } => {
                     let result =
                         self.handle_keyring_operation(|entry| entry.get_password(), service, None);
@@ -851,6 +870,7 @@ impl Config {
         values.insert(key.to_string(), serde_json::to_value(value)?);
 
         match &self.secrets {
+            #[cfg(feature = "keyring")]
             SecretStorage::Keyring { service } => {
                 let json_value = serde_json::to_string(&values)?;
                 match self.handle_keyring_operation(
@@ -892,6 +912,7 @@ impl Config {
         values.remove(key);
 
         match &self.secrets {
+            #[cfg(feature = "keyring")]
             SecretStorage::Keyring { service } => {
                 let json_value = serde_json::to_string(&values)?;
                 match self.handle_keyring_operation(
@@ -963,12 +984,12 @@ impl Config {
             || error_str.contains("couldn't access platform secure storage")
     }
 
-    /// Get a keyring entry for the specified service
+    #[cfg(feature = "keyring")]
     fn get_keyring_entry(service: &str) -> Result<keyring::Entry, keyring::Error> {
         Entry::new(service, KEYRING_USERNAME)
     }
 
-    /// Handle keyring errors with automatic fallback to file storage
+    #[cfg(feature = "keyring")]
     fn handle_keyring_fallback_error<T>(
         &self,
         keyring_err: &keyring::Error,
@@ -989,14 +1010,13 @@ impl Config {
         }
     }
 
-    /// Handle keyring operation with automatic fallback to file storage
+    #[cfg(feature = "keyring")]
     fn handle_keyring_operation<T>(
         &self,
         operation: impl FnOnce(keyring::Entry) -> Result<T, keyring::Error>,
         service: &str,
         fallback_values: Option<&HashMap<String, Value>>,
     ) -> Result<T, ConfigError> {
-        // Try to get the keyring entry and perform the operation
         let entry = match Self::get_keyring_entry(service) {
             Ok(entry) => entry,
             Err(keyring_err) => {
@@ -1004,7 +1024,6 @@ impl Config {
             }
         };
 
-        // Perform the operation
         match operation(entry) {
             Ok(result) => Ok(result),
             Err(keyring_err) => self.handle_keyring_fallback_error(&keyring_err, fallback_values),

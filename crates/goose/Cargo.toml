@@ -8,9 +8,10 @@ repository.workspace = true
 description.workspace = true
 
 [features]
-default = ["code-mode"]
+default = ["code-mode", "keyring"]
 code-mode = ["dep:pctx_code_mode"]
 cuda = ["candle-core/cuda", "candle-nn/cuda", "llama-cpp-2/cuda"]
+keyring = ["dep:keyring"]
 
 [lints]
 workspace = true
@@ -64,7 +65,7 @@ keyring = { version = "3.6.2", features = [
     "windows-native",
     "sync-secret-service",
     "vendored",
-] }
+], optional = true }
 serde_yaml = { workspace = true }
 once_cell = { workspace = true }
 etcetera = { workspace = true }
