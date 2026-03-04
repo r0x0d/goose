@@ -5,6 +5,7 @@ mod logging;
 mod openapi;
 mod routes;
 mod state;
+#[cfg(feature = "tunnel")]
 mod tunnel;
 
 use std::path::PathBuf;

@@ -9,6 +9,7 @@ use std::sync::Arc;
 use tokio::sync::Mutex;
 use tokio::task::JoinHandle;
 
+#[cfg(feature = "tunnel")]
 use crate::tunnel::TunnelManager;
 use goose::agents::ExtensionLoadResult;
 use goose::gateway::manager::GatewayManager;
@@ -22,6 +23,7 @@ pub struct AppState {
     pub(crate) agent_manager: Arc<AgentManager>,
     pub recipe_file_hash_map: Arc<Mutex<HashMap<String, PathBuf>>>,
     recipe_session_tracker: Arc<Mutex<HashSet<String>>>,
+    #[cfg(feature = "tunnel")]
     pub tunnel_manager: Arc<TunnelManager>,
     pub gateway_manager: Arc<GatewayManager>,
     pub extension_loading_tasks: ExtensionLoadingTasks,
@@ -33,6 +35,7 @@ impl AppState {
         register_builtin_extensions(goose_mcp::BUILTIN_EXTENSIONS.clone());
 
         let agent_manager = AgentManager::instance().await?;
+        #[cfg(feature = "tunnel")]
         let tunnel_manager = Arc::new(TunnelManager::new());
         let gateway_manager = Arc::new(GatewayManager::new(agent_manager.clone())?);
 
@@ -40,6 +43,7 @@ impl AppState {
             agent_manager,
             recipe_file_hash_map: Arc::new(Mutex::new(HashMap::new())),
             recipe_session_tracker: Arc::new(Mutex::new(HashSet::new())),
+            #[cfg(feature = "tunnel")]
             tunnel_manager,
             gateway_manager,
             extension_loading_tasks: Arc::new(Mutex::new(HashMap::new())),

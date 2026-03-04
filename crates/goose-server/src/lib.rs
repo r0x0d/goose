@@ -5,6 +5,7 @@ pub mod openapi;
 pub mod routes;
 pub mod state;
 pub mod tls;
+#[cfg(feature = "tunnel")]
 pub mod tunnel;
 
 // Re-export commonly used items
