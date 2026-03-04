@@ -11,9 +11,10 @@ description.workspace = true
 workspace = true
 
 [features]
-default = ["code-mode"]
+default = ["code-mode", "openapi"]
 code-mode = ["goose/code-mode"]
 cuda = ["goose/cuda"]
+openapi = []
 
 [dependencies]
 goose = { path = "../goose", default-features = false }
@@ -66,6 +67,7 @@ path = "src/main.rs"
 [[bin]]
 name = "generate_schema"
 path = "src/bin/generate_schema.rs"
+required-features = ["openapi"]
 
 [dev-dependencies]
 tower = "0.5.2"
