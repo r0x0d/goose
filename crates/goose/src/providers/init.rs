@@ -9,8 +9,6 @@ use super::{
     claude_code::ClaudeCodeProvider,
     codex::CodexProvider,
     cursor_agent::CursorAgentProvider,
-    databricks::DatabricksProvider,
-    gcpvertexai::GcpVertexAIProvider,
     gemini_cli::GeminiCliProvider,
     githubcopilot::GithubCopilotProvider,
     google::GoogleProvider,
@@ -22,11 +20,17 @@ use super::{
     openrouter::OpenRouterProvider,
     provider_registry::ProviderRegistry,
     sagemaker_tgi::SageMakerTgiProvider,
-    snowflake::SnowflakeProvider,
-    tetrate::TetrateProvider,
     venice::VeniceProvider,
     xai::XaiProvider,
 };
+#[cfg(feature = "provider-databricks")]
+use super::databricks::DatabricksProvider;
+#[cfg(feature = "provider-gcp")]
+use super::gcpvertexai::GcpVertexAIProvider;
+#[cfg(feature = "provider-snowflake")]
+use super::snowflake::SnowflakeProvider;
+#[cfg(feature = "provider-tetrate")]
+use super::tetrate::TetrateProvider;
 use crate::config::ExtensionConfig;
 use crate::model::ModelConfig;
 use crate::providers::base::ProviderType;
@@ -53,7 +57,9 @@ async fn init_registry() -> RwLock<ProviderRegistry> {
         registry.register::<ClaudeCodeProvider>(true);
         registry.register::<CodexProvider>(true);
         registry.register::<CursorAgentProvider>(false);
+        #[cfg(feature = "provider-databricks")]
         registry.register::<DatabricksProvider>(true);
+        #[cfg(feature = "provider-gcp")]
         registry.register::<GcpVertexAIProvider>(false);
         registry.register::<GeminiCliProvider>(false);
         registry.register::<GithubCopilotProvider>(false);
@@ -63,7 +69,9 @@ async fn init_registry() -> RwLock<ProviderRegistry> {
         registry.register::<OpenAiProvider>(true);
         registry.register::<OpenRouterProvider>(true);
         registry.register::<SageMakerTgiProvider>(false);
+        #[cfg(feature = "provider-snowflake")]
         registry.register::<SnowflakeProvider>(false);
+        #[cfg(feature = "provider-tetrate")]
         registry.register::<TetrateProvider>(true);
         registry.register::<VeniceProvider>(false);
         registry.register::<XaiProvider>(false);

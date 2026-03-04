@@ -8,9 +8,13 @@ repository.workspace = true
 description.workspace = true
 
 [features]
-default = ["code-mode"]
+default = ["code-mode", "provider-databricks", "provider-snowflake", "provider-tetrate", "provider-gcp"]
 code-mode = ["dep:pctx_code_mode"]
 cuda = ["candle-core/cuda", "candle-nn/cuda", "llama-cpp-2/cuda"]
+provider-databricks = []
+provider-snowflake = []
+provider-tetrate = []
+provider-gcp = ["dep:jsonwebtoken"]
 
 [lints]
 workspace = true
@@ -90,8 +94,8 @@ aws-sdk-bedrockruntime = "=1.120.0"
 # For SageMaker TGI provider
 aws-sdk-sagemakerruntime = "1.62.0"
 
-# For GCP Vertex AI provider auth
-jsonwebtoken = { version = "10.3.0", features = ["aws_lc_rs"] }
+# For GCP Vertex AI provider auth (optional, gated by "provider-gcp" feature)
+jsonwebtoken = { version = "10.3.0", features = ["aws_lc_rs"], optional = true }
 
 blake3 = "1.5"
 fs2 = { workspace = true }

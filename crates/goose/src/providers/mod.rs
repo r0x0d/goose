@@ -12,11 +12,14 @@ pub mod claude_code;
 pub(crate) mod cli_common;
 pub mod codex;
 pub mod cursor_agent;
+#[cfg(feature = "provider-databricks")]
 pub mod databricks;
 pub mod embedding;
 pub mod errors;
 pub mod formats;
+#[cfg(feature = "provider-gcp")]
 mod gcpauth;
+#[cfg(feature = "provider-gcp")]
 pub mod gcpvertexai;
 pub mod gemini_cli;
 pub mod githubcopilot;
@@ -34,8 +37,10 @@ pub mod provider_registry;
 pub mod provider_test;
 mod retry;
 pub mod sagemaker_tgi;
+#[cfg(feature = "provider-snowflake")]
 pub mod snowflake;
 pub mod testprovider;
+#[cfg(feature = "provider-tetrate")]
 pub mod tetrate;
 pub mod toolshim;
 pub mod usage_estimator;
