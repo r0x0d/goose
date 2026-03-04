@@ -70,9 +70,10 @@ comfy-table = "7.2.2"
 winapi = { version = "0.3", features = ["wincred"] }
 
 [features]
-default = ["code-mode"]
+default = ["code-mode", "scheduler"]
 code-mode = ["goose/code-mode", "goose-acp/code-mode"]
 cuda = ["goose/cuda"]
+scheduler = ["goose/scheduler"]
 # disables the update command
 disable-update = []
 

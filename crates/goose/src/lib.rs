@@ -21,6 +21,7 @@ pub mod prompt_template;
 pub mod providers;
 pub mod recipe;
 pub mod recipe_deeplink;
+#[cfg(feature = "scheduler")]
 pub mod scheduler;
 pub mod scheduler_trait;
 pub mod security;

@@ -8,9 +8,10 @@ repository.workspace = true
 description.workspace = true
 
 [features]
-default = ["code-mode"]
+default = ["code-mode", "scheduler"]
 code-mode = ["dep:pctx_code_mode"]
 cuda = ["candle-core/cuda", "candle-nn/cuda", "llama-cpp-2/cuda"]
+scheduler = ["dep:tokio-cron-scheduler"]
 
 [lints]
 workspace = true
@@ -70,7 +71,7 @@ once_cell = { workspace = true }
 etcetera = { workspace = true }
 rand = { workspace = true }
 utoipa = { workspace = true, features = ["chrono"] }
-tokio-cron-scheduler = "0.14.0"
+tokio-cron-scheduler = { version = "0.14.0", optional = true }
 urlencoding = { workspace = true }
 v_htmlescape = "0.15"
 sqlx = { version = "0.8", default-features = false, features = [
