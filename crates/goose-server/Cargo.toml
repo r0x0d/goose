@@ -11,9 +11,11 @@ description.workspace = true
 workspace = true
 
 [features]
-default = ["code-mode"]
+default = ["code-mode", "telemetry", "otel"]
 code-mode = ["goose/code-mode"]
 cuda = ["goose/cuda"]
+telemetry = ["goose/telemetry"]
+otel = ["goose/otel"]
 
 [dependencies]
 goose = { path = "../goose", default-features = false }
