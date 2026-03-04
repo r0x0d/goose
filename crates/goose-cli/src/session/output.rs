@@ -1,4 +1,5 @@
 use anstream::println;
+#[cfg(feature = "syntax-highlighting")]
 use bat::WrappingMode;
 use console::{measure_text_width, style, Color, Term};
 use goose::config::Config;
@@ -939,15 +940,22 @@ fn print_markdown(content: &str, theme: Theme) {
 }
 
 /// Renders markdown content using bat (no table processing)
-fn print_markdown_raw(content: &str, theme: Theme) {
-    bat::PrettyPrinter::new()
-        .input(bat::Input::from_bytes(content.as_bytes()))
-        .theme(theme.as_str())
-        .colored_output(env_no_color())
-        .language("Markdown")
-        .wrapping_mode(WrappingMode::NoWrapping(true))
-        .print()
-        .unwrap();
+fn print_markdown_raw(content: &str, _theme: Theme) {
+    #[cfg(feature = "syntax-highlighting")]
+    {
+        bat::PrettyPrinter::new()
+            .input(bat::Input::from_bytes(content.as_bytes()))
+            .theme(_theme.as_str())
+            .colored_output(env_no_color())
+            .language("Markdown")
+            .wrapping_mode(WrappingMode::NoWrapping(true))
+            .print()
+            .unwrap();
+    }
+    #[cfg(not(feature = "syntax-highlighting"))]
+    {
+        print!("{}", content);
+    }
 }
 
 fn extract_markdown_table(content: &str) -> Option<(String, Vec<&str>, &str)> {
