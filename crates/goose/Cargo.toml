@@ -8,9 +8,22 @@ repository.workspace = true
 description.workspace = true
 
 [features]
-default = ["code-mode"]
+default = ["code-mode", "analyze"]
 code-mode = ["dep:pctx_code_mode"]
 cuda = ["candle-core/cuda", "candle-nn/cuda", "llama-cpp-2/cuda"]
+analyze = [
+    "dep:tree-sitter",
+    "dep:tree-sitter-go",
+    "dep:tree-sitter-java",
+    "dep:tree-sitter-javascript",
+    "dep:tree-sitter-kotlin-ng",
+    "dep:tree-sitter-python",
+    "dep:tree-sitter-ruby",
+    "dep:tree-sitter-rust",
+    "dep:tree-sitter-swift",
+    "dep:tree-sitter-typescript",
+    "dep:rayon",
+]
 
 [lints]
 workspace = true
@@ -123,17 +136,17 @@ posthog-rs = "0.3.7"
 shellexpand = { workspace = true }
 indexmap = "2.12.0"
 ignore = { workspace = true }
-rayon = { workspace = true }
-tree-sitter = { workspace = true }
-tree-sitter-go = { workspace = true }
-tree-sitter-java = { workspace = true }
-tree-sitter-javascript = { workspace = true }
-tree-sitter-kotlin-ng = { workspace = true }
-tree-sitter-python = { workspace = true }
-tree-sitter-ruby = { workspace = true }
-tree-sitter-rust = { workspace = true }
-tree-sitter-swift = { workspace = true }
-tree-sitter-typescript = { workspace = true }
+rayon = { workspace = true, optional = true }
+tree-sitter = { workspace = true, optional = true }
+tree-sitter-go = { workspace = true, optional = true }
+tree-sitter-java = { workspace = true, optional = true }
+tree-sitter-javascript = { workspace = true, optional = true }
+tree-sitter-kotlin-ng = { workspace = true, optional = true }
+tree-sitter-python = { workspace = true, optional = true }
+tree-sitter-ruby = { workspace = true, optional = true }
+tree-sitter-rust = { workspace = true, optional = true }
+tree-sitter-swift = { workspace = true, optional = true }
+tree-sitter-typescript = { workspace = true, optional = true }
 which = { workspace = true }
 pctx_code_mode = { version = "^0.2.3", optional = true }
 unbinder = "0.1.7"
@@ -175,6 +188,7 @@ path = "examples/databricks_oauth.rs"
 [[bin]]
 name = "analyze_cli"
 path = "src/bin/analyze_cli.rs"
+required-features = ["analyze"]
 
 [[bin]]
 name = "build_canonical_models"
