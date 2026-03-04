@@ -4,6 +4,7 @@ pub mod builtin_extension;
 pub mod config;
 pub mod context_mgmt;
 pub mod conversation;
+#[cfg(feature = "dictation")]
 pub mod dictation;
 pub mod download_manager;
 pub mod execution;

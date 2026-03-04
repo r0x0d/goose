@@ -2,6 +2,7 @@ mod commands;
 mod configuration;
 mod error;
 mod logging;
+#[cfg(feature = "dictation")]
 mod openapi;
 mod routes;
 mod state;

@@ -1,6 +1,7 @@
 pub mod action_required;
 pub mod agent;
 pub mod config_management;
+#[cfg(feature = "dictation")]
 pub mod dictation;
 pub mod errors;
 pub mod gateway;
@@ -26,12 +27,11 @@ use axum::Router;
 
 // Function to configure all routes
 pub fn configure(state: Arc<crate::state::AppState>, secret_key: String) -> Router {
-    Router::new()
+    let mut router = Router::new()
         .merge(status::routes(state.clone()))
         .merge(reply::routes(state.clone()))
         .merge(action_required::routes(state.clone()))
         .merge(agent::routes(state.clone()))
-        .merge(dictation::routes(state.clone()))
         .merge(local_inference::routes(state.clone()))
         .merge(config_management::routes(state.clone()))
         .merge(prompts::routes())
@@ -43,6 +43,12 @@ pub fn configure(state: Arc<crate::state::AppState>, secret_key: String) -> Rout
         .merge(tunnel::routes(state.clone()))
         .merge(gateway::routes(state.clone()))
         .merge(mcp_ui_proxy::routes(secret_key.clone()))
-        .merge(mcp_app_proxy::routes(secret_key))
-        .merge(sampling::routes(state))
+        .merge(mcp_app_proxy::routes(secret_key));
+
+    #[cfg(feature = "dictation")]
+    {
+        router = router.merge(dictation::routes(state.clone()));
+    }
+
+    router.merge(sampling::routes(state))
 }
