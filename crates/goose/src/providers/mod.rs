@@ -4,6 +4,7 @@ pub mod auto_detect;
 pub mod azure;
 pub mod azureauth;
 pub mod base;
+#[cfg(feature = "aws-providers")]
 pub mod bedrock;
 pub mod canonical;
 pub mod catalog;
@@ -33,6 +34,7 @@ pub mod openrouter;
 pub mod provider_registry;
 pub mod provider_test;
 mod retry;
+#[cfg(feature = "aws-providers")]
 pub mod sagemaker_tgi;
 pub mod snowflake;
 pub mod testprovider;

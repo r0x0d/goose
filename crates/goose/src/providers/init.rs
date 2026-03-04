@@ -4,7 +4,6 @@ use super::{
     anthropic::AnthropicProvider,
     azure::AzureProvider,
     base::{Provider, ProviderMetadata},
-    bedrock::BedrockProvider,
     chatgpt_codex::ChatGptCodexProvider,
     claude_code::ClaudeCodeProvider,
     codex::CodexProvider,
@@ -21,12 +20,15 @@ use super::{
     openai::OpenAiProvider,
     openrouter::OpenRouterProvider,
     provider_registry::ProviderRegistry,
-    sagemaker_tgi::SageMakerTgiProvider,
     snowflake::SnowflakeProvider,
     tetrate::TetrateProvider,
     venice::VeniceProvider,
     xai::XaiProvider,
 };
+#[cfg(feature = "aws-providers")]
+use super::bedrock::BedrockProvider;
+#[cfg(feature = "aws-providers")]
+use super::sagemaker_tgi::SageMakerTgiProvider;
 use crate::config::ExtensionConfig;
 use crate::model::ModelConfig;
 use crate::providers::base::ProviderType;
@@ -47,6 +49,7 @@ async fn init_registry() -> RwLock<ProviderRegistry> {
     let mut registry = ProviderRegistry::new().with_providers(|registry| {
         registry.register::<AnthropicProvider>(true);
         registry.register::<AzureProvider>(false);
+        #[cfg(feature = "aws-providers")]
         registry.register::<BedrockProvider>(false);
         registry.register::<LocalInferenceProvider>(false);
         registry.register::<ChatGptCodexProvider>(true);
@@ -62,6 +65,7 @@ async fn init_registry() -> RwLock<ProviderRegistry> {
         registry.register::<OllamaProvider>(true);
         registry.register::<OpenAiProvider>(true);
         registry.register::<OpenRouterProvider>(true);
+        #[cfg(feature = "aws-providers")]
         registry.register::<SageMakerTgiProvider>(false);
         registry.register::<SnowflakeProvider>(false);
         registry.register::<TetrateProvider>(true);
