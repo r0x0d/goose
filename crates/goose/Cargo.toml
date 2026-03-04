@@ -8,9 +8,10 @@ repository.workspace = true
 description.workspace = true
 
 [features]
-default = ["code-mode"]
+default = ["code-mode", "gateway"]
 code-mode = ["dep:pctx_code_mode"]
 cuda = ["candle-core/cuda", "candle-nn/cuda", "llama-cpp-2/cuda"]
+gateway = ["dep:pulldown-cmark"]
 
 [lints]
 workspace = true
@@ -137,7 +138,7 @@ tree-sitter-typescript = { workspace = true }
 which = { workspace = true }
 pctx_code_mode = { version = "^0.2.3", optional = true }
 unbinder = "0.1.7"
-pulldown-cmark = "0.13.0"
+pulldown-cmark = { version = "0.13.0", optional = true }
 llama-cpp-2 = { version = "0.1.137", features = ["sampler"] }
 encoding_rs = "0.8.35"
 

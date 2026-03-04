@@ -11,6 +11,7 @@ use tokio::task::JoinHandle;
 
 use crate::tunnel::TunnelManager;
 use goose::agents::ExtensionLoadResult;
+#[cfg(feature = "gateway")]
 use goose::gateway::manager::GatewayManager;
 use goose::providers::local_inference::InferenceRuntime;
 
@@ -23,6 +24,7 @@ pub struct AppState {
     pub recipe_file_hash_map: Arc<Mutex<HashMap<String, PathBuf>>>,
     recipe_session_tracker: Arc<Mutex<HashSet<String>>>,
     pub tunnel_manager: Arc<TunnelManager>,
+    #[cfg(feature = "gateway")]
     pub gateway_manager: Arc<GatewayManager>,
     pub extension_loading_tasks: ExtensionLoadingTasks,
     pub inference_runtime: Arc<InferenceRuntime>,
@@ -34,6 +36,7 @@ impl AppState {
 
         let agent_manager = AgentManager::instance().await?;
         let tunnel_manager = Arc::new(TunnelManager::new());
+        #[cfg(feature = "gateway")]
         let gateway_manager = Arc::new(GatewayManager::new(agent_manager.clone())?);
 
         Ok(Arc::new(Self {
@@ -41,6 +44,7 @@ impl AppState {
             recipe_file_hash_map: Arc::new(Mutex::new(HashMap::new())),
             recipe_session_tracker: Arc::new(Mutex::new(HashSet::new())),
             tunnel_manager,
+            #[cfg(feature = "gateway")]
             gateway_manager,
             extension_loading_tasks: Arc::new(Mutex::new(HashMap::new())),
             inference_runtime: InferenceRuntime::get_or_init(),
