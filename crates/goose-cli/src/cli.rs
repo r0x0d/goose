@@ -709,6 +709,7 @@ enum Command {
     },
 
     /// Run goose as an ACP (Agent Client Protocol) agent
+    #[cfg(feature = "acp")]
     #[command(about = "Run goose as an ACP agent server on stdio")]
     Acp {
         /// Add builtin extensions by name
@@ -1032,6 +1033,7 @@ fn get_command_name(command: &Option<Command>) -> &'static str {
         Some(Command::Configure {}) => "configure",
         Some(Command::Info { .. }) => "info",
         Some(Command::Mcp { .. }) => "mcp",
+        #[cfg(feature = "acp")]
         Some(Command::Acp { .. }) => "acp",
         Some(Command::Session { .. }) => "session",
         Some(Command::Project {}) => "project",
@@ -1719,6 +1721,7 @@ pub async fn cli() -> anyhow::Result<()> {
         Some(Command::Configure {}) => handle_configure().await,
         Some(Command::Info { verbose }) => handle_info(verbose),
         Some(Command::Mcp { server }) => handle_mcp_command(server).await,
+        #[cfg(feature = "acp")]
         Some(Command::Acp { builtins }) => goose_acp::server::run(builtins).await,
         Some(Command::Session {
             command: Some(cmd), ..
