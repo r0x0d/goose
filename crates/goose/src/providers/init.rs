@@ -5,13 +5,8 @@ use super::{
     azure::AzureProvider,
     base::{Provider, ProviderMetadata},
     bedrock::BedrockProvider,
-    chatgpt_codex::ChatGptCodexProvider,
-    claude_code::ClaudeCodeProvider,
-    codex::CodexProvider,
-    cursor_agent::CursorAgentProvider,
     databricks::DatabricksProvider,
     gcpvertexai::GcpVertexAIProvider,
-    gemini_cli::GeminiCliProvider,
     githubcopilot::GithubCopilotProvider,
     google::GoogleProvider,
     lead_worker::LeadWorkerProvider,
@@ -26,6 +21,11 @@ use super::{
     tetrate::TetrateProvider,
     venice::VeniceProvider,
     xai::XaiProvider,
+};
+#[cfg(feature = "cli-providers")]
+use super::{
+    chatgpt_codex::ChatGptCodexProvider, claude_code::ClaudeCodeProvider, codex::CodexProvider,
+    cursor_agent::CursorAgentProvider, gemini_cli::GeminiCliProvider,
 };
 use crate::config::ExtensionConfig;
 use crate::model::ModelConfig;
@@ -49,13 +49,16 @@ async fn init_registry() -> RwLock<ProviderRegistry> {
         registry.register::<AzureProvider>(false);
         registry.register::<BedrockProvider>(false);
         registry.register::<LocalInferenceProvider>(false);
-        registry.register::<ChatGptCodexProvider>(true);
-        registry.register::<ClaudeCodeProvider>(true);
-        registry.register::<CodexProvider>(true);
-        registry.register::<CursorAgentProvider>(false);
+        #[cfg(feature = "cli-providers")]
+        {
+            registry.register::<ChatGptCodexProvider>(true);
+            registry.register::<ClaudeCodeProvider>(true);
+            registry.register::<CodexProvider>(true);
+            registry.register::<CursorAgentProvider>(false);
+            registry.register::<GeminiCliProvider>(false);
+        }
         registry.register::<DatabricksProvider>(true);
         registry.register::<GcpVertexAIProvider>(false);
-        registry.register::<GeminiCliProvider>(false);
         registry.register::<GithubCopilotProvider>(false);
         registry.register::<GoogleProvider>(true);
         registry.register::<LiteLLMProvider>(false);

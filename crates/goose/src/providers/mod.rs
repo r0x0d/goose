@@ -7,10 +7,14 @@ pub mod base;
 pub mod bedrock;
 pub mod canonical;
 pub mod catalog;
+#[cfg(feature = "cli-providers")]
 pub mod chatgpt_codex;
+#[cfg(feature = "cli-providers")]
 pub mod claude_code;
 pub(crate) mod cli_common;
+#[cfg(feature = "cli-providers")]
 pub mod codex;
+#[cfg(feature = "cli-providers")]
 pub mod cursor_agent;
 pub mod databricks;
 pub mod embedding;
@@ -18,6 +22,7 @@ pub mod errors;
 pub mod formats;
 mod gcpauth;
 pub mod gcpvertexai;
+#[cfg(feature = "cli-providers")]
 pub mod gemini_cli;
 pub mod githubcopilot;
 pub mod google;

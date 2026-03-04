@@ -8,9 +8,10 @@ repository.workspace = true
 description.workspace = true
 
 [features]
-default = ["code-mode"]
+default = ["code-mode", "cli-providers"]
 code-mode = ["dep:pctx_code_mode"]
 cuda = ["candle-core/cuda", "candle-nn/cuda", "llama-cpp-2/cuda"]
+cli-providers = []
 
 [lints]
 workspace = true
