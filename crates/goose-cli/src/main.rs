@@ -15,6 +15,7 @@ fn enable_windows_vt_processing() {
 }
 
 async fn run() -> Result<()> {
+    println!("yo!");
     if let Err(e) = goose_cli::logging::setup_logging(None) {
         eprintln!("Warning: Failed to initialize logging: {}", e);
     }
